@@ -166,7 +166,7 @@ const FileMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div className="fixed left-0 top-0 bottom-0 w-[320px] bg-primary z-50 text-primary-foreground shadow-xl flex flex-col">
-        <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.doc,.html,.htm,.txt" onChange={handleFileOpen} />
+        <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.doc,.html,.htm,.txt,.rtf" onChange={handleFileOpen} />
         
         <div className="p-4 flex items-center gap-2">
           <span className="text-lg font-semibold">File</span>
