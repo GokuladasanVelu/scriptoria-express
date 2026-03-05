@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import { useEditor } from './EditorContext';
+import { useEditor } from '../EditorContext';
 import {
   Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   List, ListOrdered, IndentDecrease, IndentIncrease, Superscript, Subscript,
