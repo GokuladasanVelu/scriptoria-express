@@ -71,22 +71,91 @@ const FileMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     if (ext === 'docx' || ext === 'doc') {
       try {
         const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.convertToHtml({ arrayBuffer });
+        const result = await mammoth.convertToHtml(
+          { arrayBuffer },
+          {
+            styleMap: [
+              "p[style-name='Heading 1'] => h1:fresh",
+              "p[style-name='Heading 2'] => h2:fresh",
+              "p[style-name='Heading 3'] => h3:fresh",
+              "p[style-name='Heading 4'] => h4:fresh",
+              "p[style-name='Title'] => h1.doc-title:fresh",
+              "p[style-name='Subtitle'] => h2.doc-subtitle:fresh",
+              "p[style-name='Quote'] => blockquote:fresh",
+              "p[style-name='Intense Quote'] => blockquote.intense:fresh",
+              "p[style-name='List Paragraph'] => li:fresh",
+              "r[style-name='Strong'] => strong",
+              "r[style-name='Emphasis'] => em",
+              "r[style-name='Intense Emphasis'] => em.intense",
+            ],
+            includeDefaultStyleMap: true,
+            convertImage: mammoth.images.imgElement(function(image) {
+              return image.read("base64").then(function(imageBuffer) {
+                return {
+                  src: "data:" + image.contentType + ";base64," + imageBuffer,
+                  style: "max-width:100%;height:auto",
+                };
+              });
+            }),
+          }
+        );
+
         pushUndo();
-        editorRef.current.innerHTML = result.value;
+        
+        // Preserve formatting by wrapping in a container that retains Word-like defaults
+        let html = result.value;
+        
+        // Preserve paragraph spacing from Word
+        html = html.replace(/<p>/g, '<p style="margin:0 0 8pt 0;line-height:1.15;">');
+        
+        // Preserve heading styles
+        html = html.replace(/<h1>/g, '<h1 style="font-size:16pt;font-weight:bold;color:#2E74B5;margin:12pt 0 4pt 0;">');
+        html = html.replace(/<h2>/g, '<h2 style="font-size:13pt;font-weight:bold;color:#2E74B5;margin:10pt 0 4pt 0;">');
+        html = html.replace(/<h3>/g, '<h3 style="font-size:11pt;font-weight:bold;margin:8pt 0 4pt 0;">');
+        html = html.replace(/<h4>/g, '<h4 style="font-size:11pt;font-weight:bold;font-style:italic;margin:6pt 0 2pt 0;">');
+        
+        // Preserve blockquote formatting
+        html = html.replace(/<blockquote>/g, '<blockquote style="margin:8pt 0;padding:4pt 12pt;border-left:3px solid #2E74B5;color:#404040;font-style:italic;">');
+        
+        // Preserve table formatting
+        html = html.replace(/<table>/g, '<table style="border-collapse:collapse;width:100%;margin:8pt 0;">');
+        html = html.replace(/<td>/g, '<td style="border:1px solid #999;padding:4px 8px;">');
+        html = html.replace(/<th>/g, '<th style="border:1px solid #999;padding:4px 8px;font-weight:bold;background:#f0f0f0;">');
+        
+        editorRef.current.innerHTML = html;
         setState(p => ({ ...p, documentTitle: file.name.replace(/\.\w+$/, '') }));
+        
+        if (result.messages.length > 0) {
+          console.warn('Document conversion warnings:', result.messages);
+        }
       } catch (err) {
         console.error('Error opening file:', err);
       }
     } else if (ext === 'html' || ext === 'htm') {
       const text = await file.text();
       pushUndo();
-      editorRef.current.innerHTML = text;
+      // Extract body content if full HTML document, preserving styles
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      // Grab any <style> blocks and inline them
+      const styles = doc.querySelectorAll('style');
+      let styleContent = '';
+      styles.forEach(s => { styleContent += s.textContent; });
+      const bodyContent = doc.body.innerHTML;
+      editorRef.current.innerHTML = (styleContent ? `<style>${styleContent}</style>` : '') + bodyContent;
       setState(p => ({ ...p, documentTitle: file.name.replace(/\.\w+$/, '') }));
     } else if (ext === 'txt') {
       const text = await file.text();
       pushUndo();
-      editorRef.current.innerText = text;
+      // Preserve line breaks
+      editorRef.current.innerHTML = text.split('\n').map(line => `<p style="margin:0 0 2pt 0;">${line || '&nbsp;'}</p>`).join('');
+      setState(p => ({ ...p, documentTitle: file.name.replace(/\.\w+$/, '') }));
+    } else if (ext === 'rtf') {
+      // Basic RTF - just strip RTF codes and display as text
+      const text = await file.text();
+      pushUndo();
+      const plainText = text.replace(/\{[^}]*\}/g, '').replace(/\\[a-z]+\d* ?/g, '').replace(/[{}]/g, '');
+      editorRef.current.innerHTML = plainText.split('\n').map(line => `<p style="margin:0 0 2pt 0;">${line || '&nbsp;'}</p>`).join('');
       setState(p => ({ ...p, documentTitle: file.name.replace(/\.\w+$/, '') }));
     }
     e.target.value = '';
@@ -97,7 +166,7 @@ const FileMenu: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div className="fixed left-0 top-0 bottom-0 w-[320px] bg-primary z-50 text-primary-foreground shadow-xl flex flex-col">
-        <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.doc,.html,.htm,.txt" onChange={handleFileOpen} />
+        <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.doc,.html,.htm,.txt,.rtf" onChange={handleFileOpen} />
         
         <div className="p-4 flex items-center gap-2">
           <span className="text-lg font-semibold">File</span>
