@@ -228,3 +228,36 @@ input[type="range"].zoom-slider::-webkit-slider-thumb {
   background: hsl(var(--statusbar-foreground));
   cursor: pointer;
 }
+
+/* Formatting marks */
+.show-format-marks p::after {
+  content: '¶';
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  opacity: 0.5;
+}
+.show-format-marks br::after {
+  content: '↵';
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  opacity: 0.5;
+}
+.show-format-marks span[style*="white-space"]::before,
+.show-format-marks .document-page {
+  word-spacing: 0;
+}
+
+/* Print styles */
+@media print {
+  .bg-tab-row, .ruler, .find-replace-dialog, .word-context-menu {
+    display: none !important;
+  }
+  .document-area {
+    overflow: visible !important;
+    background: white !important;
+  }
+  .document-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+}
