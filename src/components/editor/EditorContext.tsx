@@ -1,5 +1,15 @@
 import React from 'react';
-import { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useRef, useCallback } from 'react';
+
+export interface PageSetup {
+  marginTop: number; // in inches
+  marginBottom: number;
+  marginLeft: number;
+  marginRight: number;
+  orientation: 'portrait' | 'landscape';
+  pageSize: 'letter' | 'a4' | 'legal';
+  columns: number;
+}
 
 export interface EditorState {
   fontFamily: string;
@@ -16,11 +26,17 @@ export interface EditorState {
   charCount: number;
   pageCount: number;
   showFormatMarks: boolean;
+  showRuler: boolean;
+  viewMode: 'print' | 'web';
   documentTitle: string;
   undoStack: string[];
   redoStack: string[];
   findReplaceOpen: boolean;
   activeTab: string;
+  pageSetup: PageSetup;
+  pageColor: string;
+  pageBorder: string;
+  theme: string;
 }
 
 interface EditorContextType {
@@ -33,6 +49,16 @@ interface EditorContextType {
   undo: () => void;
   redo: () => void;
 }
+
+const defaultPageSetup: PageSetup = {
+  marginTop: 1,
+  marginBottom: 1,
+  marginLeft: 1.25,
+  marginRight: 1.25,
+  orientation: 'portrait',
+  pageSize: 'letter',
+  columns: 1,
+};
 
 const defaultState: EditorState = {
   fontFamily: 'Calibri',
@@ -49,11 +75,17 @@ const defaultState: EditorState = {
   charCount: 0,
   pageCount: 1,
   showFormatMarks: false,
+  showRuler: true,
+  viewMode: 'print',
   documentTitle: 'Document1',
   undoStack: [],
   redoStack: [],
   findReplaceOpen: false,
   activeTab: 'Home',
+  pageSetup: defaultPageSetup,
+  pageColor: '#FFFFFF',
+  pageBorder: 'none',
+  theme: 'Office',
 };
 
 const EditorContext = createContext<EditorContextType | null>(null);
