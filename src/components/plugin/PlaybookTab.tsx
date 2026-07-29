@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, ChevronDown, ChevronRight, Check, AlertTriangle, XCircle, BookOpen, RotateCcw, Download, Clock } from 'lucide-react';
+import { Play, ChevronDown, ChevronRight, Check, AlertTriangle, XCircle, BookOpen } from 'lucide-react';
 import { mockPlaybooks, mockPlaybookResults, Playbook, PlaybookCheck } from './mockData';
 
 const statusIcons = {
