@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, ChevronDown, ChevronRight, Check, AlertTriangle, XCircle, BookOpen, RotateCcw, Download, Clock } from 'lucide-react';
+import { Play, ChevronDown, ChevronRight, Check, AlertTriangle, XCircle, BookOpen } from 'lucide-react';
 import { mockPlaybooks, mockPlaybookResults, Playbook, PlaybookCheck } from './mockData';
 
 const statusIcons = {
@@ -171,17 +171,8 @@ const PlaybookTab: React.FC = () => {
       </div>
 
       {/* Actions */}
-      <div className="border-t border-border p-2 flex gap-1.5">
-        <button onClick={() => { setHasRun(false); }} className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] border border-border hover:bg-accent transition-colors">
-          <RotateCcw size={11} /> Re-run
-        </button>
-        <button className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] border border-border hover:bg-accent transition-colors">
-          <Download size={11} /> Export
-        </button>
-        <button className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] border border-border hover:bg-accent transition-colors">
-          <Clock size={11} /> History
-        </button>
-      </div>
+      <div className="border-t border-border p-2 flex gap-1.5" />
+
     </div>
   );
 };
